@@ -24,7 +24,7 @@ Copy the files under `src/` to your program
 OR
 
 ```
-composer require lincanbin/php-pdo-mysql-class
+composer require drkbcn/php-pdo-mssql-class
 ```
 
 Initialize
