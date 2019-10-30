@@ -1,7 +1,7 @@
-PHP-PDO-MySQL-Class [![Build Status](https://travis-ci.org/lincanbin/PHP-PDO-MySQL-Class.svg?branch=develop)](https://travis-ci.org/lincanbin/PHP-PDO-MySQL-Class)
+PHP-PDO-MsSQL-Class [![Build Status](https://travis-ci.org/lincanbin/PHP-PDO-MySQL-Class.svg?branch=develop)](https://travis-ci.org/lincanbin/PHP-PDO-MySQL-Class)
 ===================
 
-A PHP MySQL PDO class similar to the the Python MySQLdb, 
+A PHP MsSQL PDO class similar to the the Python MySQLdb, 
 which supports iterator and parameter binding when using "WHERE IN" statement.
 
 * [Install](#install)
@@ -32,7 +32,6 @@ Initialize
 ```php
 <?php
 define('DBHost', '127.0.0.1');
-define('DBPort', 3306);
 define('DBName', 'Database');
 define('DBUser', 'root');
 define('DBPassword', '');
