@@ -1,23 +1,22 @@
 {
-    "name": "lincanbin/php-pdo-mysql-class",
+    "name": "drkbcn/php-pdo-mssql-class",
     "keywords": [
         "pdo",
-        "mysql",
+        "mssql",
         "database",
         "iterator"
     ],
-    "description": "A PHP MySQL PDO class similar to the the Python MySQLdb, which supports iterator and parameter binding when using 'WHERE IN' statement.",
+    "description": "A PHP MsSQL PDO class similar to the the Python MySQLdb, which supports iterator and parameter binding when using 'WHERE IN' statement.",
     "license": "Apache-2.0",
     "authors": [
         {
-            "name": "lincanbin",
-            "email": "lincanbin@hotmail.com"
+            "name": "Manel Alonso",
+            "email": "malonso@labelgrup.com"
         }
     ],
     "require": {
         "php": ">=5.3.6",
-        "ext-pdo": "*",
-        "ext-pdo_mysql": "*"
+        "ext-pdo": "*"
     },
     "autoload": {
         "files": [
