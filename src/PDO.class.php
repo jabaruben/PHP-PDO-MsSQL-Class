@@ -27,7 +27,7 @@ class DbSQL
     private $DBPassword;
     private $pdo;
     private $sQuery;
-    private $connectionStatus = false;
+    public $connectionStatus = false;
     private $logObject;
     private $parameters;
     public $rowCount   = 0;
@@ -46,25 +46,26 @@ class DbSQL
      * @param $DBUser
      * @param $DBPassword
      */
-    public function __construct($Host, $DBName, $DBUser, $DBPassword)
+    public function __construct($Host, $DBName, $DBUser, $DBPassword, $DBPort = 1433)
     {
         $this->logObject  = new PDOLog();
         $this->Host       = $Host;
         $this->DBName     = $DBName;
+        $this->DBPort     = $DBPort;
         $this->DBUser     = $DBUser;
         $this->DBPassword = $DBPassword;
         $this->parameters = array();
-        $this->Connect();
+        //$this->Connect();
     }
 
     /**
      * Adaptamos la funcion de conectado a SQLServer
      */
-    private function Connect()
+    public function Connect()
     {
         try {
             $dsn = 'sqlsrv:';
-            $dsn .= 'server='.$this->Host.';';
+            $dsn .= 'server='.$this->Host.','.(int)$this->DBPort.';';
             if (!empty($this->DBName)) {
                 $dsn .= 'database='.$this->DBName.';';
             }
