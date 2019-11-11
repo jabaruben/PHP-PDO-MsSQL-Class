@@ -204,7 +204,8 @@ class DbSQL
         $statement = strtolower($rawStatement[0]);
         if ($statement === 'select' || $statement === 'show') {
             return $this->sQuery->fetchAll($fetchMode);
-        } elseif ($statement === 'insert' || $statement === 'update' || $statement === 'delete') {
+        } elseif ($statement === 'insert' || $statement === 'update' || $statement === 'delete' 
+                || $statement === 'exec') {
             return $this->sQuery->rowCount();
         } else {
             return NULL;
@@ -310,6 +311,7 @@ class DbSQL
      */
     private function ExceptionLog(PDOException $e, $sql = "", $method = '', $parameters = array())
     {
+        return;
         $message = $e->getMessage();
         $exception = 'Unhandled Exception. <br />';
         $exception .= $message;
