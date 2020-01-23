@@ -1,8 +1,7 @@
 PHP-PDO-MsSQL-Class [![Build Status](https://travis-ci.org/lincanbin/PHP-PDO-MySQL-Class.svg?branch=develop)](https://travis-ci.org/lincanbin/PHP-PDO-MySQL-Class)
 ===================
 
-A PHP MsSQL PDO class similar to the the Python MySQLdb, 
-which supports iterator and parameter binding when using "WHERE IN" statement.
+A forked version of PHP-PDO-MySQL-Class to work with SQL Server.
 
 * [Install](#install)
 
