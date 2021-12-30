@@ -20,8 +20,8 @@
         "ext-pdo": "*"
     },
     "autoload": {
-        "files": [
-            "src/PDO.class.php"
-        ]
+        "psr-4": {
+            "MsSQL\\": "src/"
+        }
     }
 }

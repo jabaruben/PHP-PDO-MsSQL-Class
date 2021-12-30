@@ -1,4 +1,7 @@
 <?php
+
+namespace MsSQL;
+
 class PDOLog
 {
     private $path = '/logs/';
