@@ -2,6 +2,10 @@
 
 namespace MsSQL;
 
+use Iterator;
+use PDO;
+use PDOStatement;
+
 class PDOIterator implements Iterator {
     private $position = 0;
     private $pdo;
@@ -14,26 +18,26 @@ class PDOIterator implements Iterator {
         $this->fetchMode = $fetchMode;
     }
 
-    function rewind() {
+    public function rewind(): void {
         $this->position = 0;
         $this->pdo->execute();
         $this->nextResult = $this->pdo->fetch($this->fetchMode, PDO::FETCH_ORI_NEXT);
     }
 
-    function current() {
+    public function current(): mixed {
         return $this->nextResult;
     }
 
-    function key() {
+    public function key(): mixed {
         return $this->position;
     }
 
-    function next() {
+    public function next(): void {
         ++$this->position;
         $this->nextResult = $this->pdo->fetch($this->fetchMode, PDO::FETCH_ORI_NEXT);
     }
 
-    function valid() {
+    public function valid(): bool {
         $invalid = $this->nextResult === false;
         if ($invalid) {
             $this->pdo->closeCursor();

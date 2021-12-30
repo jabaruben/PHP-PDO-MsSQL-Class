@@ -2,6 +2,8 @@
 
 namespace MsSQL;
 
+use DateTime;
+
 class PDOLog
 {
     private $path = '/logs/';

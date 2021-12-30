@@ -14,8 +14,9 @@
 
 namespace MsSQL;
 
-// require(__DIR__ . '/PDO.Log.class.php');
-// require(__DIR__ . '/PDO.Iterator.class.php');
+use PDO;
+use PDOException;
+use PDOStatement;
 
 /** Class DB
  * @property PDO pdo PDO object
@@ -243,7 +244,7 @@ class DbSQLServer
      * @param null $params
      * @return bool|string
      */
-    public function insert($tableName, $params = null)
+    public function insert(string $tableName, array $params = [])
     {
         $keys = array_keys($params);
         $rowCount = $this->query(
@@ -252,7 +253,7 @@ class DbSQLServer
                 $params
         );
         if ($rowCount === 0) {
-                return false;
+            return false;
         }
         return $this->lastInsertId();
     }
