@@ -23,7 +23,7 @@ Copy the files under `src/` to your program
 OR
 
 ```
-composer require drkbcn/php-pdo-mssql-class
+composer require jabaruben/php-pdo-mssql-class
 ```
 
 Initialize
