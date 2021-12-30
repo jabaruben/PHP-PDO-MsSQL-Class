@@ -79,8 +79,7 @@ class DbSQLServer
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->connectionStatus = true;
 
-        }
-        catch (PDOException $e) {
+        } catch (PDOException $e) {
             $this->ExceptionLog($e, '', 'Connect');
         }
     }
@@ -101,37 +100,36 @@ class DbSQLServer
 
     private function Init($query, $parameters = null, $driverOptions = array())
     {
-            if (!$this->connectionStatus) {
-                    $this->Connect();
-            }
-            try {
-                    $this->parameters = $parameters;
-                    $this->sQuery     = $this->pdo->prepare($this->BuildParams($query, $this->parameters), $driverOptions);
-
-                    if (!empty($this->parameters)) {
-                            if (array_key_exists(0, $parameters)) {
-                                    $parametersType = true;
-                                    array_unshift($this->parameters, "");
-                                    unset($this->parameters[0]);
-                            } else {
-                                    $parametersType = false;
-                            }
-                            foreach ($this->parameters as $column => $value) {
-                                    $this->sQuery->bindParam($parametersType ? intval($column) : ":" . $column, $this->parameters[$column]); //It would be query after loop end(before 'sQuery->execute()').It is wrong to use $value.
-                            }
-                    }
-
-                    if (!isset($driverOptions[PDO::ATTR_CURSOR])) {
-            $this->sQuery->execute();
+        if (!$this->connectionStatus) {
+            $this->Connect();
         }
-                    $this->querycount++;
-            }
-            catch (PDOException $e) {
-                    $this->ExceptionLog($e, $this->BuildParams($query), 'Init', array('query' => $query, 'parameters' => $parameters));
+        
+        try {
+            $this->parameters = $parameters;
+            $this->sQuery     = $this->pdo->prepare($this->BuildParams($query, $this->parameters), $driverOptions);
 
+            if (!empty($this->parameters)) {
+                if (array_key_exists(0, $parameters)) {
+                    $parametersType = true;
+                    array_unshift($this->parameters, "");
+                    unset($this->parameters[0]);
+                } else {
+                    $parametersType = false;
+                }
+                foreach ($this->parameters as $column => $value) {
+                    $this->sQuery->bindParam($parametersType ? intval($column) : ":" . $column, $this->parameters[$column]); //It would be query after loop end(before 'sQuery->execute()').It is wrong to use $value.
+                }
             }
 
-            $this->parameters = array();
+            if (!isset($driverOptions[PDO::ATTR_CURSOR])) {
+                $this->sQuery->execute();
+            }
+            $this->querycount++;
+        } catch (PDOException $e) {
+            $this->ExceptionLog($e, $this->BuildParams($query), 'Init', array('query' => $query, 'parameters' => $parameters));
+        }
+
+        $this->parameters = array();
     }
 
     private function BuildParams($query, $params = null)
@@ -209,8 +207,10 @@ class DbSQLServer
         $statement = strtolower($rawStatement[0]);
         if ($statement === 'select' || $statement === 'show') {
             return $this->sQuery->fetchAll($fetchMode);
-        } elseif ($statement === 'insert' || $statement === 'update' || $statement === 'delete' 
-                || $statement === 'exec') {
+        } elseif (
+            $statement === 'insert' || $statement === 'update' 
+            || $statement === 'delete' || $statement === 'exec'
+        ) {
             return $this->sQuery->rowCount();
         } else {
             return NULL;
@@ -248,9 +248,9 @@ class DbSQLServer
     {
         $keys = array_keys($params);
         $rowCount = $this->query(
-                'INSERT INTO `' . $tableName . '` (`' . implode('`,`', $keys) . '`) 
-                VALUES (:' . implode(',:', $keys) . ')',
-                $params
+            'INSERT INTO `' . $tableName . '` (`' . implode('`,`', $keys) . '`) 
+            VALUES (:' . implode(',:', $keys) . ')',
+            $params
         );
         if ($rowCount === 0) {
             return false;
