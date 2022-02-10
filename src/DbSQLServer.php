@@ -70,17 +70,18 @@ class DbSQLServer
     {
         try {
             $dsn = 'sqlsrv:';
-            $dsn .= 'server='.$this->Host.','.(int)$this->DBPort.';';
+            $dsn .= 'server=' . $this->Host . ',' . (int)$this->DBPort . ';';
             if (!empty($this->DBName)) {
-                $dsn .= 'database='.$this->DBName.';';
+                $dsn .= 'database=' . $this->DBName . ';';
             }
 
             $this->pdo = new PDO($dsn, $this->DBUser, $this->DBPassword);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->connectionStatus = true;
-
         } catch (PDOException $e) {
             $this->ExceptionLog($e, '', 'Connect');
+            // throw new PDOException("Error establishing connection:" . $e->getMessage(), 1);
+            throw $e;
         }
     }
 
@@ -101,9 +102,13 @@ class DbSQLServer
     private function Init($query, $parameters = null, $driverOptions = array())
     {
         if (!$this->connectionStatus) {
-            $this->Connect();
+            try {
+                $this->Connect();
+            } catch (PDOException $e) {
+                throw $e;
+            }
         }
-        
+
         try {
             $this->parameters = $parameters;
             $this->sQuery     = $this->pdo->prepare($this->BuildParams($query, $this->parameters), $driverOptions);
@@ -141,14 +146,14 @@ class DbSQLServer
                     $array_parameter_found = true;
                     $in = "";
                     foreach ($parameter as $key => $value) {
-                        $name_placeholder = $parameter_key."_".$key;
+                        $name_placeholder = $parameter_key . "_" . $key;
                         // concatenates params as named placeholders
-                        $in .= ":".$name_placeholder.", ";
+                        $in .= ":" . $name_placeholder . ", ";
                         // adds each single parameter to $params
                         $params[$name_placeholder] = $value;
                     }
                     $in = rtrim($in, ", ");
-                    $query = preg_replace("/:".$parameter_key."/", $in, $query);
+                    $query = preg_replace("/:" . $parameter_key . "/", $in, $query);
                     // removes array form $params
                     unset($params[$parameter_key]);
                 }
@@ -177,8 +182,8 @@ class DbSQLServer
     }
 
     /**
-    * @return bool
-    */
+     * @return bool
+     */
     public function rollBack()
     {
         return $this->pdo->rollBack();
@@ -197,18 +202,34 @@ class DbSQLServer
      * @param string $query
      * @param null $params
      * @param int $fetchMode
-     * @return array|int|null
+     * @return array|false|int|null
      */
     public function query($query, $params = null, $fetchMode = PDO::FETCH_ASSOC)
     {
         $query        = trim($query);
         $rawStatement = explode(" ", $query);
-        $this->Init($query, $params);
+
+        try {
+            $this->Init($query, $params);
+        } catch (PDOException $e) {
+            throw $e;
+        }
+
         $statement = strtolower($rawStatement[0]);
-        if ($statement === 'select' || $statement === 'show') {
+        if ($statement === 'declare' || $statement === 'with') {
+            while ($this->sQuery->columnCount() === 0 && $this->sQuery->nextRowset()) {
+                // Advance rowset until we get to a rowset with data
+            }
+
+            if ($this->sQuery->columnCount() <= 0) {
+                return [];
+            }
+
+            return $this->sQuery->fetchAll($fetchMode);
+        } elseif ($statement === 'select' || $statement === 'show') {
             return $this->sQuery->fetchAll($fetchMode);
         } elseif (
-            $statement === 'insert' || $statement === 'update' 
+            $statement === 'insert' || $statement === 'update'
             || $statement === 'delete' || $statement === 'exec'
         ) {
             return $this->sQuery->rowCount();
@@ -228,7 +249,13 @@ class DbSQLServer
     {
         $query        = trim($query);
         $rawStatement = explode(" ", $query);
-        $this->Init($query, $params, array(PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL));
+
+        try {
+            $this->Init($query, $params, array(PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL));
+        } catch (PDOException $e) {
+            throw $e;
+        }
+
         $statement = strtolower($rawStatement[0]);
         if ($statement === 'select' || $statement === 'show') {
             return new PDOIterator($this->sQuery, $fetchMode);
@@ -273,7 +300,12 @@ class DbSQLServer
      */
     public function column($query, $params = null)
     {
-        $this->Init($query, $params);
+        try {
+            $this->Init($query, $params);
+        } catch (PDOException $e) {
+            throw $e;
+        }
+
         $resultColumn = $this->sQuery->fetchAll(PDO::FETCH_COLUMN);
         $this->rowCount = $this->sQuery->rowCount();
         $this->columnCount = $this->sQuery->columnCount();
@@ -289,7 +321,12 @@ class DbSQLServer
      */
     public function row($query, $params = null, $fetchmode = PDO::FETCH_ASSOC)
     {
-        $this->Init($query, $params);
+        try {
+            $this->Init($query, $params);
+        } catch (PDOException $e) {
+            throw $e;
+        }
+
         $resultRow = $this->sQuery->fetch($fetchmode);
         $this->rowCount = $this->sQuery->rowCount();
         $this->columnCount = $this->sQuery->columnCount();
@@ -304,7 +341,12 @@ class DbSQLServer
      */
     public function single($query, $params = null)
     {
-        $this->Init($query, $params);
+        try {
+            $this->Init($query, $params);
+        } catch (PDOException $e) {
+            throw $e;
+        }
+
         return $this->sQuery->fetchColumn();
     }
 
@@ -334,7 +376,7 @@ class DbSQLServer
             && !$this->inTransaction()
         ) {
             $this->SetFailureFlag();
-            $this->retryAttempt ++;
+            $this->retryAttempt++;
             $this->logObject->write('Retry ' . $this->retryAttempt . ' times', $this->DBName . md5($this->DBPassword));
             call_user_func_array(array($this, $method), $parameters);
         } else {

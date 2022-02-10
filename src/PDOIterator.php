@@ -24,11 +24,11 @@ class PDOIterator implements Iterator {
         $this->nextResult = $this->pdo->fetch($this->fetchMode, PDO::FETCH_ORI_NEXT);
     }
 
-    public function current(): mixed {
+    public function current() {
         return $this->nextResult;
     }
 
-    public function key(): mixed {
+    public function key() {
         return $this->position;
     }
 
