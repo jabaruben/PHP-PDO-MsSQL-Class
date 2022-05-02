@@ -39,9 +39,9 @@ class DbSQLServer
     public $columnCount   = 0;
     public $querycount = 0;
 
-    private $retryAttempt = 0; // 失败重试次数
+    private $retryAttempt = 0;
     const AUTO_RECONNECT = true;
-    const RETRY_ATTEMPTS = 3; // 最大失败重试次数
+    const RETRY_ATTEMPTS = 3;
 
     /**
      * DB constructor.
@@ -199,6 +199,9 @@ class DbSQLServer
 
     /**
      * execute a sql query, returns an result array in the select operation, and returns the number of rows affected in other operations
+     * 
+     * If you need to specify the kind of query because have IFs or WHILEs or something, can put at first a comment with "/ *UPDATE* /" (without spaces) to specify the kind of query
+     * 
      * @param string $query
      * @param null $params
      * @param int $fetchMode
@@ -206,6 +209,14 @@ class DbSQLServer
      */
     public function query($query, $params = null, $fetchMode = PDO::FETCH_ASSOC)
     {
+        $response     = [
+            "sqlState"        => "00000",
+            "driverErrorCode" => 0,
+            "errorText"       => "",
+            "rowCount"        => 0,
+            "rows"            => []
+        ];
+
         $query        = trim($query);
         $rawStatement = explode(" ", $query);
 
@@ -215,27 +226,34 @@ class DbSQLServer
             throw $e;
         }
 
-        $statement = strtolower($rawStatement[0]);
+        $statement = strtolower(str_replace("/", "", str_replace("*", "", $rawStatement[0])));
+
+        $errorInfo = $this->sQuery->errorInfo();
+        $response["sqlState"]        = $errorInfo[0];
+        $response["driverErrorCode"] = $errorInfo[1];
+        $response["errorText"]       = $errorInfo[2];
+
         if ($statement === 'declare' || $statement === 'with') {
             while ($this->sQuery->columnCount() === 0 && $this->sQuery->nextRowset()) {
                 // Advance rowset until we get to a rowset with data
             }
 
-            if ($this->sQuery->columnCount() <= 0) {
-                return [];
+            if ($this->sQuery->columnCount() > 0) {
+                $response["rows"] = $this->sQuery->fetchAll($fetchMode);
             }
-
-            return $this->sQuery->fetchAll($fetchMode);
         } elseif ($statement === 'select' || $statement === 'show') {
-            return $this->sQuery->fetchAll($fetchMode);
+            $response["rows"] = $this->sQuery->fetchAll($fetchMode);
         } elseif (
             $statement === 'insert' || $statement === 'update'
             || $statement === 'delete' || $statement === 'exec'
         ) {
-            return $this->sQuery->rowCount();
+            $response["rowCount"] = $this->sQuery->rowCount();
         } else {
-            return NULL;
+            $response["sqlState"]  = "66666";
+            $response["errorText"] = "Error desconocido o resultado no esperado.";
         }
+
+        return $response;
     }
 
     /**
